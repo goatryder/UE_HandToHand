@@ -27,12 +27,40 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 		UCameraComponent* PlayerCamera;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float MovementSpeed = 75.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float FasterMovementSpeed = 150.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float DashSpeed = 225.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float DashTimeSec = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float DashCoolDown = 1.f;
+
 	void MoveForward(float Val);
 	void MoveRight(float Val);
+
+	void MoveFaster();
+	void CancelMoveFaster();
+
+	void Dash();
+	void CancelDash();
+
+	void Jump();
+	void StopJumping();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	bool bCanDash = true;
+	float DashTimeAccomulation;
+	float CurrentMaxSpeed = MovementSpeed;
 
 public:	
 	// Called every frame

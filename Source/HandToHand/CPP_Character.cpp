@@ -11,7 +11,7 @@ ACPP_Character::ACPP_Character()
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
+	CameraBoom->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
 
 	PlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	PlayerCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -19,6 +19,10 @@ ACPP_Character::ACPP_Character()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
+
+	GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
+
+	DashCoolDown += DashTimeSec;
 
 }
 
@@ -34,6 +38,38 @@ void ACPP_Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// dash cooldown
+	DashTimeAccomulation += DeltaTime;
+
+	if (DashTimeAccomulation > DashCoolDown) {
+
+		bCanDash = true;
+
+		DashTimeAccomulation = 0.f;
+
+	}
+	//
+
+	// print current speed
+	/*
+	float Speed;
+	
+	if (FVector::DotProduct(GetVelocity(), GetActorForwardVector()) > 0.f) {
+		
+		//Speed = GetVelocity().Size();
+		Speed = GetVelocity().Size();
+
+	}
+	else {
+
+		Speed = -GetVelocity().Size();
+
+	}*/
+
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *FString::Printf(TEXT("HORIZONTAL SPEED: %f"), GetVelocity().X));
+	 
+
 }
 
 // Called to bind functionality to input
@@ -43,11 +79,16 @@ void ACPP_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	//PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	//PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("MoveForward", this, &ACPP_Character::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ACPP_Character::MoveForward);
 	// PlayerInputComponent->BindAxis("MoveRight", this, &ACPP_Character::MoveRight);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACPP_Character::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACPP_Character::StopJumping);
+
+	PlayerInputComponent->BindAction("MoveFaster", IE_Pressed, this, &ACPP_Character::MoveFaster);
+	PlayerInputComponent->BindAction("MoveFaster", IE_Released, this, &ACPP_Character::CancelMoveFaster);
+
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ACPP_Character::Dash);
 
 }
 
@@ -70,5 +111,56 @@ void ACPP_Character::MoveRight(float Val)
 
 	FVector Right = FRotationMatrix(Controller->GetControlRotation()).GetUnitAxis(EAxis::Y);
 	AddMovementInput(Right, Val);
+
+}
+
+void ACPP_Character::MoveFaster()
+{
+	
+	GetCharacterMovement()->MaxWalkSpeed = FasterMovementSpeed;
+	CurrentMaxSpeed = FasterMovementSpeed;
+}
+
+void ACPP_Character::CancelMoveFaster()
+{
+
+	GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
+	CurrentMaxSpeed = MovementSpeed;
+}
+
+void ACPP_Character::Dash()
+{
+
+	if (bCanDash) {
+
+		bCanDash = false;
+
+		GetCharacterMovement()->MaxWalkSpeed = DashSpeed;
+
+		FTimerHandle AttackTimer;
+
+		GetWorldTimerManager().SetTimer(AttackTimer, this, &ACPP_Character::CancelDash, DashTimeSec);
+
+	}
+}
+
+void ACPP_Character::CancelDash()
+{
+
+	GetCharacterMovement()->MaxWalkSpeed = CurrentMaxSpeed;
+
+}
+
+void ACPP_Character::Jump()
+{
+
+	ACharacter::Jump();
+
+}
+
+void ACPP_Character::StopJumping()
+{
+	
+	ACharacter::StopJumping();
 
 }
