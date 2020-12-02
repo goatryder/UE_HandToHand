@@ -42,7 +42,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		float DashCoolDown = 1.f;
 
-	void MoveForward(float Val);
 	void MoveRight(float Val);
 
 	void MoveFaster();
@@ -54,6 +53,23 @@ public:
 	void Jump();
 	void StopJumping();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+		UAnimMontage* PunchLeftMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+		UAnimMontage* PunchRightMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+		UAnimMontage* KickLeftMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+		UAnimMontage* KickRightMontage;
+
+	void PunchLeft();
+	void PunchRight();
+	void KickLeft();
+	void KickRight();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -61,6 +77,11 @@ protected:
 	bool bCanDash = true;
 	float DashTimeAccomulation;
 	float CurrentMaxSpeed = MovementSpeed;
+
+	bool bCanMove = true;
+
+	UFUNCTION()
+		void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 public:	
 	// Called every frame

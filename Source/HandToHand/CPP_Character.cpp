@@ -31,6 +31,8 @@ void ACPP_Character::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	GetMesh()->GetAnimInstance()->OnMontageBlendingOut.AddDynamic(this, &ACPP_Character::OnMontageEnded);
+
 }
 
 // Called every frame
@@ -77,10 +79,7 @@ void ACPP_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	//PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	//PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ACPP_Character::MoveForward);
-	// PlayerInputComponent->BindAxis("MoveRight", this, &ACPP_Character::MoveRight);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ACPP_Character::MoveRight);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACPP_Character::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACPP_Character::StopJumping);
@@ -89,27 +88,25 @@ void ACPP_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("MoveFaster", IE_Released, this, &ACPP_Character::CancelMoveFaster);
 
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ACPP_Character::Dash);
-
-}
-
-void ACPP_Character::MoveForward(float Val)
-{
-
-	if (Val == 0.f)
-		return;
-
-	FVector Fwd = FRotationMatrix(Controller->GetControlRotation()).GetUnitAxis(EAxis::X);
-	AddMovementInput(Fwd, Val);
+	
+	PlayerInputComponent->BindAction("PunchLeft", IE_Pressed, this, &ACPP_Character::PunchLeft);
+	PlayerInputComponent->BindAction("PunchRight", IE_Pressed, this, &ACPP_Character::PunchRight);
+	PlayerInputComponent->BindAction("KickLeft", IE_Pressed, this, &ACPP_Character::KickLeft);
+	PlayerInputComponent->BindAction("KickRight", IE_Pressed, this, &ACPP_Character::KickRight);
 
 }
 
 void ACPP_Character::MoveRight(float Val)
 {
-	
-	if (Val == 0.f)
+
+	if (Val == 0.f || bCanMove == false)
 		return;
 
-	FVector Right = FRotationMatrix(Controller->GetControlRotation()).GetUnitAxis(EAxis::Y);
+	FVector Right = GetActorForwardVector();
+
+	if (FVector::DotProduct(Right, FVector::ForwardVector) < 0.f)
+		Right *= -1.f;
+
 	AddMovementInput(Right, Val);
 
 }
@@ -162,5 +159,59 @@ void ACPP_Character::StopJumping()
 {
 	
 	ACharacter::StopJumping();
+
+}
+
+void ACPP_Character::PunchLeft()
+{
+
+	if (PunchLeftMontage) {
+
+		PlayAnimMontage(PunchLeftMontage);
+
+	}
+
+}
+
+void ACPP_Character::PunchRight()
+{
+
+	if (PunchRightMontage) {
+
+		PlayAnimMontage(PunchRightMontage);
+
+	}
+
+}
+
+void ACPP_Character::KickLeft()
+{
+
+	if (KickLeftMontage) {
+
+		bCanMove = false;
+		PlayAnimMontage(KickLeftMontage);
+
+	}
+
+}
+
+void ACPP_Character::KickRight()
+{
+
+	if (KickRightMontage) {
+
+		bCanMove = false;
+		PlayAnimMontage(KickRightMontage);
+
+	}
+
+}
+
+void ACPP_Character::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+
+	if (!bInterrupted)
+		bCanMove = true;
 
 }
