@@ -215,3 +215,26 @@ void ACPP_Character::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		bCanMove = true;
 
 }
+
+
+// fight interface functions
+
+void ACPP_Character::CheckPunch_Implementation(bool IsLeftHand)
+{
+
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *FString::Printf(TEXT("Check Punch Interface implemented in CPP_Character: %f")));
+
+}
+
+void ACPP_Character::CheckKick_Implementation(bool IsLeftLeg)
+{
+
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *FString::Printf(TEXT("Check Kick Interface implemented in CPP_Character: %f")));
+
+}
+
+
+
+// end of fight interace functions

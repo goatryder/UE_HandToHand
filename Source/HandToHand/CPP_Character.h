@@ -9,11 +9,13 @@
 #include <Camera/CameraComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
 
+#include "FightInterface.h"
+
 #include "CPP_Character.generated.h"
 
 
 UCLASS()
-class HANDTOHAND_API ACPP_Character : public ACharacter
+class HANDTOHAND_API ACPP_Character : public ACharacter, public IFightInterface
 {
 	GENERATED_BODY()
 
@@ -89,5 +91,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void CheckPunch_Implementation(bool IsLeftHand) override;
+	void CheckKick_Implementation(bool IsLeftLeg) override;
 
 };
